@@ -3,6 +3,7 @@ import { InjectionToken } from '@angular/core';
 import * as LocalForage from 'localforage';
 
 import * as CordovaSQLiteDriver from 'localforage-cordovasqlitedriver';
+import { webExtensionSyncStorageDriver } from './drivers/webExtensionStorage';
 
 /**
  * Storage is an easy way to store key/value pairs and JSON objects.
@@ -122,7 +123,10 @@ export class Storage {
       const defaultConfig = getDefaultConfig();
       const actualConfig = Object.assign(defaultConfig, config || {});
 
-      LocalForage.defineDriver(CordovaSQLiteDriver)
+      Promise.all([
+        LocalForage.defineDriver(CordovaSQLiteDriver),
+        LocalForage.defineDriver(webExtensionSyncStorageDriver)
+      ])
         .then(() => {
           db = LocalForage.createInstance(actualConfig);
         })
@@ -165,6 +169,8 @@ export class Storage {
           return LocalForage.WEBSQL;
         case 'localstorage':
           return LocalForage.LOCALSTORAGE;
+        case 'webExtensionSyncStorage':
+          return webExtensionSyncStorageDriver._driver;
       }
     });
   }
